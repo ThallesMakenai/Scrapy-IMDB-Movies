@@ -1,50 +1,58 @@
 # Scrapy-IMDB-Movies
 
-The explanation of the code
+The explanation of the code step-by-step
 
+
+1. Importing Scrapy:
 ```
 import scrapy
-
-class GamesSpider(scrapy.Spider):
-    name = "games"
-    start_urls = ["https://boardgamegeek.com/browse/boardgame"]
 ```
+- This line imports the Scrapy library, which is used for web scraping.
 
-The code begins by importing the `scrapy` module, which is a Python framework used for web scraping. 
-It then defines a class called `GamesSpider` that inherits from `scrapy.Spider`. 
-The spider is given a name "games" and a start URL, which is set to "https://boardgamegeek.com/browse/boardgame".
+2. Class Definition:
+```
+class ImdbSpider(scrapy.Spider):
+```
+- This line defines a class named `ImdbSpider` that inherits from the `scrapy.Spider` class. It serves as the spider's blueprint.
 
+3. Spider Name:
+```
+    name = "imdb"
+```
+- This line sets the name of the spider as "imdb".
+
+4. Start URLs:
+```
+    start_urls = ["https://www.imdb.com/chart/top/?ref_=nv_mv_250"]
+```
+- This line specifies the starting URL(s) for the spider. In this case, it starts from the IMDb Top 250 movies chart.
+
+5. Parse Method:
 ```
     def parse(self, response):
 ```
+- This line defines the `parse` method, which is a callback function invoked by Scrapy to handle the response from each URL.
 
-Inside the `GamesSpider` class, there's a method called `parse`. 
-This method is automatically called by Scrapy when a response is received from the start URL or any subsequent requests made.
-
+6. CSS Selector:
 ```
-        for game in response.css('#row_'):
+        for movies in response.css('.titleColumn'):
+```
+- This line iterates over the elements with the class "titleColumn" in the response. It represents movie information on the page.
+
+7. Yielding Data:
+```
             yield {
-                'rank': game.css('.collection_rank a::attr(name)').get(),
-                'name': game.css('.primary ::text').get(),
-                'rate': game.css('#row_ .collection_bggrating:nth-child(5) ::text').get().split()[0]
+                'title': movies.css('.titleColumn a::text').get(),
+                'year': movies.css('.secondaryInfo::text').get(),
+                'rate': response.css('strong::text').get()
             }
 ```
+- This block of code creates a dictionary for each movie found, with keys 'title', 'year', and 'rate'. The corresponding values are extracted using CSS selectors.
 
-Within the `parse` method, a loop is used to iterate over each game element selected by the CSS selector `#row_` in the response. 
-For each game, the spider extracts information such as the rank, name, and rating. 
-These details are stored as key-value pairs in a dictionary, which is then yielded to be processed later.
-
+8. Pass Statement:
 ```
-        next_page = response.xpath('//*[@id="maincontent"]/form/div/div[1]/a[5]').attrib['href']
-        if next_page is not None:
-            yield  response.follow(next_page, callback=self.parse)
+        pass
 ```
+- This line is a placeholder and does nothing. It indicates the end of the `parse` method.
 
-After extracting game information, the code looks for a next page URL using an XPath selector. 
-If a next page exists, it is extracted and stored in the `next_page` variable. 
-The code then checks if `next_page` is not `None`. 
-If a next page URL is found, the spider uses `response.follow` to create a new request to that URL, and the `parse` method 
-is recursively called again to continue parsing the subsequent page.
-
-That's a brief explanation of the code. It uses Scrapy to scrape game information from the BoardGameGeek website, 
-starting from the provided URL and following pagination to collect data from multiple pages.
+By combining these lines of code, you define a Scrapy spider named "imdb" that starts at the IMDb Top 250 movies chart. It extracts movie information, such as titles, release years, and ratings, from the web page using CSS selectors. The extracted data is then yielded in the form of dictionaries.
